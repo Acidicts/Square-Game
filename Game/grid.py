@@ -10,11 +10,18 @@ class Grid:
         self.rows = rows
         self.cols = cols
 
-        self.grid = [[None for _ in range(cols)] for _ in range(rows)]
-
         surf = pygame.Surface((TILE_SIZE, TILE_SIZE))
         pygame.draw.rect(surf, (10, 10, 30), (0, 0, TILE_SIZE-1, TILE_SIZE-1))
-        self.grid[0][0] = Move(0, 0, TILE_SIZE, TILE_SIZE, surf)
+
+        self.sprites = {
+            "move": load_image("move.png"),
+            "clone": load_image("clone.png"),
+            "tile": surf.convert(),
+        }
+
+        self.grid = [[None for _ in range(cols)] for _ in range(rows)]
+        self.grid[0][0] = Move(0, 0, TILE_SIZE, TILE_SIZE, self.sprites['move'], self, Vector2(1, 0))
+        self.grid[0][5] = Move(5, 0, TILE_SIZE, TILE_SIZE, self.sprites['move'], self, Vector2(0, 0))
 
     def draw(self, screen):
         z = 0
