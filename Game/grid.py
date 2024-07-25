@@ -18,6 +18,7 @@ class Grid:
             "clone": load_image("clone.png"),
             "tile": surf.convert(),
             "destroy": load_image("destroy.png"),
+            "rotate": load_image("rotate.png"),
         }
 
         self.grid = [[None for _ in range(cols)] for _ in range(rows)]

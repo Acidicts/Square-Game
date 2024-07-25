@@ -2,6 +2,7 @@ import pygame
 from pygame.math import Vector2
 from .utils import *
 
+
 class Tile:
     def __init__(self, x, y, width, height, image, grid):
         self.x = x
@@ -51,7 +52,7 @@ class Move(Tile):
     def draw(self, screen):
         pygame.draw.rect(screen,
                          (10, 10, 30),
-                         (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE-1, TILE_SIZE-1))
+                         (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE - 1, TILE_SIZE - 1))
         if self.direction.x == 1:
             screen.blit(self.image, (self.loc.x, self.loc.y))
         elif self.direction.x == -1:
@@ -62,7 +63,7 @@ class Move(Tile):
             screen.blit(pygame.transform.rotate(self.image, -90), (self.loc.x, self.loc.y))
         else:
             pygame.draw.rect(screen, (0, 0, 70),
-                             (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE-1, TILE_SIZE-1))
+                             (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE - 1, TILE_SIZE - 1))
 
     def update(self, play=False):
         if play:
@@ -76,7 +77,7 @@ class Move(Tile):
                     self.grid.grid[int(self.grid_loc.y)][int(self.grid_loc.x)] = self
                 else:
                     cell = (self.grid.grid[int(self.grid_loc.y) + int(self.direction.y)][
-                         int(self.grid_loc.x) + int(self.direction.x)])
+                        int(self.grid_loc.x) + int(self.direction.x)])
                     if cell.cat == "move":
                         buffer = cell.direction
                         cell.direction = self.direction
@@ -122,7 +123,7 @@ class Clone(Tile):
     def draw(self, screen):
         pygame.draw.rect(screen,
                          (10, 10, 30),
-                         (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE-1, TILE_SIZE-1))
+                         (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE - 1, TILE_SIZE - 1))
         if self.direction.x == 1:
             screen.blit(self.image, (self.loc.x, self.loc.y))
         elif self.direction.x == -1:
@@ -133,7 +134,7 @@ class Clone(Tile):
             screen.blit(pygame.transform.rotate(self.image, -90), (self.loc.x, self.loc.y))
         else:
             pygame.draw.rect(screen, (0, 70, 0),
-                             (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE-1, TILE_SIZE-1))
+                             (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE - 1, TILE_SIZE - 1))
 
 
 class Destroy(Tile):
@@ -166,5 +167,45 @@ class Destroy(Tile):
     def draw(self, screen):
         pygame.draw.rect(screen,
                          (10, 10, 30),
-                         (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE-1, TILE_SIZE-1))
+                         (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE - 1, TILE_SIZE - 1))
         screen.blit(self.image, (self.loc.x, self.loc.y))
+
+
+class Rotate(Tile):
+    def __init__(self, x, y, width, height, image, grid):
+        super().__init__(x, y, width, height, image, grid)
+        self.z = 2
+        self.wait = pygame.time.get_ticks()
+        self.images = [self.image, pygame.transform.rotate(self.image, 90)]
+        self.img = 0
+
+    def update(self, play=False):
+        cells_around = {
+            "up": self.grid_loc + Vector2(1, -1),
+            "down": self.grid_loc + Vector2(-1, 1),
+            "left": self.grid_loc + Vector2(-1, -1),
+            "right": self.grid_loc + Vector2(1, 1)
+        }
+
+        for direction, loc in cells_around.items():
+            if 0 <= loc.x < self.grid.cols and 0 <= loc.y < self.grid.rows:
+                cell = self.grid.grid[int(loc.y)][int(loc.x)]
+                if cell and play:
+                    if direction == "up" and cell.direction == Vector2(0, 1):
+                        cell.direction = Vector2(1, 0)
+                    elif direction == "down" and cell.direction == Vector2(0, -1):
+                        cell.direction = Vector2(-1, 0)
+                    elif direction == "left" and cell.direction == Vector2(1, 0):
+                        cell.direction = Vector2(0, -1)
+                    elif direction == "right" and cell.direction == Vector2(-1, 0):
+                        cell.direction = Vector2(0, 1)
+
+    def draw(self, screen):
+        if self.wait:
+            if pygame.time.get_ticks() - self.wait > 1000:
+                self.img += 1
+                if self.img == 2:
+                    self.img = 0
+        elif not self.wait:
+            self.wait = pygame.time.get_ticks()
+        screen.blit(self.images[self.img], (self.loc.x, self.loc.y))

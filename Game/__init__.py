@@ -33,7 +33,7 @@ class Game:
         self.show_playing_text = True
         self.letters = []
 
-        self.classes = [Move, Clone, Destroy]
+        self.classes = [Move, Clone, Destroy, Rotate]
         self.choice = 0
 
     def run(self):
