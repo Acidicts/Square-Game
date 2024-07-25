@@ -7,13 +7,22 @@ class Tile:
     def __init__(self, x, y, width, height, image):
         self.x = x
         self.y = y
+        self.z = 0
+
         self.width = width
         self.height = height
+
         self.image = image
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
 
+        self.grid_loc = Vector2(x, y)
+        self.loc = Vector2(*grid_to_map(x, y))
+
     def update(self):
         pass
+
+    def draw(self, screen):
+        screen.blit(self.image, (self.x, self.y))
 
 
 class Move(Tile):
@@ -24,22 +33,19 @@ class Move(Tile):
         self.image = surf.convert()
 
         self.selected = False
-        self.direction = Vector2(0, 1)
+        self.direction = Vector2(1, 1)
 
-    def move(self, x, y):
-        self.x, self.y = grid_to_map(x, y)
+        self.z = 1
 
-    def update(self):
-        self.x, self.y = (Vector2.x * 32, Vector2.y * 32)
-        mouse = pygame.mouse.get_pressed()
+    def move(self, gridx, gridy):
+        self.x, self.y = (self.loc.x, self.loc.y)
 
-        if mouse[0] and not self.selected:
-            if self.rect.collidepoint(pygame.mouse.get_pos()):
-                self.selected = True
+    def draw(self, screen):
+        screen.blit(self.image, (self.loc.x, self.loc.y))
 
-        elif mouse[0] and self.selected:
-            self.selected = False
-            self.move(*map_to_grid(*pygame.mouse.get_pos()))
-
-        elif mouse[1] and self.selected:
-            self.selected = False
+    def update(self, play):
+        if play:
+            self.loc += self.direction
+            self.grid_loc = Vector2(*map_to_grid(self.loc.x, self.loc.y))
+        else:
+            self.loc = Vector2(*grid_to_map(self.grid_loc.x, self.grid_loc.y))
