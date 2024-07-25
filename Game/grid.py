@@ -3,6 +3,7 @@ from .tiles import *
 from pygame.math import Vector2
 from .utils import *
 from .settings import TILE_SIZE
+import os
 
 
 class Grid:
@@ -24,18 +25,37 @@ class Grid:
         self.grid = [[None for _ in range(cols)] for _ in range(rows)]
 
     def draw(self, screen):
-        z = 0
-        for row in range(len(self.grid)):
-            for col in range(len(self.grid[row])):
+        for row in range(self.rows):
+            for col in range(self.cols):
                 if self.grid[row][col]:
-                    if self.grid[row][col].z > z:
-                        z = self.grid[row][col].z
+                    self.grid[row][col].draw(screen)
+                else:
+                    pygame.draw.rect(screen, (10, 10, 30),
+                                     (*grid_to_map(col, row),
+                                      TILE_SIZE - 1, TILE_SIZE - 1))
 
-        for z in range(z+1):
-            for row in range(self.rows):
-                if row != 0:
-                    for col in range(self.cols):
-                        if self.grid[row][col] and z == self.grid[row][col].z:
-                            self.grid[row][col].draw(screen)
-                        if not self.grid[row][col] and z == 0:
-                            pygame.draw.rect(screen, (10, 10, 30), (*grid_to_map(col, row), TILE_SIZE-1, TILE_SIZE-1))
+    def save(self, path):
+        with open(path, "w") as f:
+            for row in self.grid:
+                for cell in row:
+                    if cell:
+                        f.write(f"{cell.cat}({int(cell.direction.x)},{int(cell.direction.y)}) ")
+                    else:
+                        f.write("none ")
+                f.write("\n")
+
+    def load(self, path):
+        with open(path, "r") as f:
+            lines = f.readlines()
+            for y, line in enumerate(lines):
+                for x, cell in enumerate(line.split()):
+                    if cell != "none":
+                        class_name = cell.split('(')[0].capitalize()
+                        direction_str = cell[
+                                        cell.find("(") + 1:cell.find(")")].strip()
+                        try:
+                            direction = Vector2(*map(int, direction_str.split(",")))
+                        except ValueError:
+                            direction = Vector2(0, 0)
+                        self.grid[y][x] = eval(class_name)(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE,
+                                                           self.sprites[cell.split('(')[0].lower()], self, direction)

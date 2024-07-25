@@ -51,6 +51,15 @@ class Game:
                     if event.key == pygame.K_SPACE:
                         playing = not playing
 
+                    if event.key == pygame.K_ESCAPE:
+                        self.__init__()
+
+                    if event.key == pygame.K_RETURN:
+                        self.grid.save("Game/Assets/images/save.txt")
+
+                    if event.key == pygame.K_HASH:
+                        self.grid.load("Game/Assets/images/save.txt")
+
                     if self.current_tile:
                         if event.key == pygame.K_RIGHT:
                             self.current_tile.direction = Vector2(1, 0)
