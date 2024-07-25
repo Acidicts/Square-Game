@@ -17,6 +17,7 @@ class Grid:
             "move": load_image("move.png"),
             "clone": load_image("clone.png"),
             "tile": surf.convert(),
+            "destroy": load_image("destroy.png"),
         }
 
         self.grid = [[None for _ in range(cols)] for _ in range(rows)]

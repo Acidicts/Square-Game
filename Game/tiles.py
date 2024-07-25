@@ -78,8 +78,12 @@ class Move(Tile):
                     cell = (self.grid.grid[int(self.grid_loc.y) + int(self.direction.y)][
                          int(self.grid_loc.x) + int(self.direction.x)])
                     if cell.cat == "move":
+                        buffer = cell.direction
                         cell.direction = self.direction
-                        self.direction = Vector2(0, 0)
+                        self.direction = buffer
+            else:
+                self.direction = Vector2(0, 0)
+
         else:
             self.loc = Vector2(*grid_to_map(self.grid_loc.x, self.grid_loc.y))
 
@@ -100,13 +104,13 @@ class Clone(Tile):
             target_x = int(self.grid_loc.x + self.direction.x)
             target_y = int(self.grid_loc.y + self.direction.y)
 
-            if 0 < target_x < self.grid.cols and 0 < target_y < self.grid.rows:
+            if 0 <= target_x < self.grid.cols and 0 <= target_y < self.grid.rows:
                 if not self.grid.grid[target_y][target_x]:
                     cell = self.grid.grid[source_y][source_x]
                     if cell:
                         # Create a new cell of the same class at the target location
                         new_cell = type(cell)(target_x, target_y, cell.width, cell.height, cell.image, self.grid,
-                                              self.direction)
+                                              cell.direction)
                         self.grid.grid[target_y][target_x] = new_cell
 
                         # Update the new cell's position
@@ -130,3 +134,37 @@ class Clone(Tile):
         else:
             pygame.draw.rect(screen, (0, 70, 0),
                              (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE-1, TILE_SIZE-1))
+
+
+class Destroy(Tile):
+    def __init__(self, x, y, width, height, image, grid, direction=Vector2(0, 0)):
+        super().__init__(x, y, width, height, image, grid)
+        self.z = 3
+        self.cat = "destroy"
+
+    def update(self, *args):
+        cells_around = {
+            "up": self.grid_loc + Vector2(0, -1),
+            "down": self.grid_loc + Vector2(0, 1),
+            "left": self.grid_loc + Vector2(-1, 0),
+            "right": self.grid_loc + Vector2(1, 0)
+        }
+
+        for direction, loc in cells_around.items():
+            if 0 <= loc.x < self.grid.cols and 0 <= loc.y < self.grid.rows:
+                cell = self.grid.grid[int(loc.y)][int(loc.x)]
+                if cell:
+                    if direction == "up" and cell.direction == Vector2(0, 1):
+                        self.grid.grid[int(loc.y)][int(loc.x)] = None
+                    elif direction == "down" and cell.direction == Vector2(0, -1):
+                        self.grid.grid[int(loc.y)][int(loc.x)] = None
+                    elif direction == "left" and cell.direction == Vector2(1, 0):
+                        self.grid.grid[int(loc.y)][int(loc.x)] = None
+                    elif direction == "right" and cell.direction == Vector2(-1, 0):
+                        self.grid.grid[int(loc.y)][int(loc.x)] = None
+
+    def draw(self, screen):
+        pygame.draw.rect(screen,
+                         (10, 10, 30),
+                         (*grid_to_map(self.grid_loc.x, self.grid_loc.y), TILE_SIZE-1, TILE_SIZE-1))
+        screen.blit(self.image, (self.loc.x, self.loc.y))

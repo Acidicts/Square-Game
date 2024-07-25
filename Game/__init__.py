@@ -3,6 +3,7 @@ import pygame
 from .settings import TILE_SIZE
 from .tiles import *
 from .grid import Grid
+from .rainbow import *
 
 
 class Game:
@@ -30,10 +31,16 @@ class Game:
 
         self.blink = None
         self.show_playing_text = True
+        self.letters = []
+
+        self.classes = [Move, Clone, Destroy]
+        self.choice = 0
 
     def run(self):
         running = True
         playing = False
+
+        surf = None
 
         while running:
             for event in pygame.event.get():
@@ -61,6 +68,48 @@ class Game:
                             self.current_tile.direction = Vector2(0, 1)
                             self.current_tile = None
 
+                    if event.key == pygame.K_r:
+                        if "r" not in self.letters:
+                            self.letters.append("r")
+                        else:
+                            self.letters = []
+
+                    if event.key == pygame.K_a:
+                        if "a" not in self.letters:
+                            self.letters.append("a")
+                        else:
+                            self.letters = []
+
+                    if event.key == pygame.K_i:
+                        if "i" not in self.letters:
+                            self.letters.append("i")
+                        else:
+                            self.letters = []
+
+                    if event.key == pygame.K_n:
+                        if "n" not in self.letters:
+                            self.letters.append("n")
+                        else:
+                            self.letters = []
+
+                    if event.key == pygame.K_b:
+                        if "b" not in self.letters:
+                            self.letters.append("b")
+                        else:
+                            self.letters = []
+
+                    if event.key == pygame.K_o:
+                        if "o" not in self.letters:
+                            self.letters.append("o")
+                        else:
+                            self.letters = []
+
+                    if event.key == pygame.K_w:
+                        if "w" not in self.letters:
+                            self.letters.append("w")
+                        else:
+                            self.letters = []
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         if not self.current_tile:
@@ -87,9 +136,13 @@ class Game:
 
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0:
-                        self.selected_tile = Move  # Assuming Move is a class
-                    else:
-                        self.selected_tile = Clone  # Assuming Clone is a class
+                        self.choice = (self.choice - 1) % len(self.classes)
+                    elif event.y < 0:
+                        self.choice = (self.choice + 1) % len(self.classes)
+                    self.selected_tile = self.classes[self.choice]
+
+            if self.current_tile and self.current_tile.cat == "destroy":
+                self.current_tile = None
 
             for row in self.grid.grid:
                 for cell in row:
@@ -102,7 +155,19 @@ class Game:
                     if cell:
                         cells += 1
 
+            if len(self.letters) == 7:
+                surf = pygame.surface.Surface((self.WIDTH, self.HEIGHT))
+                surf.fill((0, 0, 0))
+                surf.set_colorkey((0, 0, 0))
+                surf.blit(create_rainbow_gradient(self.WIDTH, self.HEIGHT), (0, 0))
+                print("RAINBOW")
+                self.letters = []
+
             self.screen.fill((0, 0, 0))
+
+            if surf:
+                self.screen.blit(surf, (0, 0))
+
             self.grid.draw(self.screen)
 
             if self.selected_tile:
