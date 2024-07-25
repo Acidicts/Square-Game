@@ -20,8 +20,6 @@ class Grid:
         }
 
         self.grid = [[None for _ in range(cols)] for _ in range(rows)]
-        self.grid[0][0] = Move(0, 0, TILE_SIZE, TILE_SIZE, self.sprites['move'], self, Vector2(1, 0))
-        self.grid[0][5] = Move(5, 0, TILE_SIZE, TILE_SIZE, self.sprites['move'], self, Vector2(0, 0))
 
     def draw(self, screen):
         z = 0
@@ -33,8 +31,9 @@ class Grid:
 
         for z in range(z+1):
             for row in range(self.rows):
-                for col in range(self.cols):
-                    if self.grid[row][col] and z == self.grid[row][col].z:
-                        self.grid[row][col].draw(screen)
-                    if not self.grid[row][col] and z == 0:
-                        pygame.draw.rect(screen, (10, 10, 30), (*grid_to_map(col, row), TILE_SIZE-1, TILE_SIZE-1))
+                if row != 0:
+                    for col in range(self.cols):
+                        if self.grid[row][col] and z == self.grid[row][col].z:
+                            self.grid[row][col].draw(screen)
+                        if not self.grid[row][col] and z == 0:
+                            pygame.draw.rect(screen, (10, 10, 30), (*grid_to_map(col, row), TILE_SIZE-1, TILE_SIZE-1))
